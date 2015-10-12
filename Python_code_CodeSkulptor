@@ -1,0 +1,200 @@
+#Blackjack
+#This version of Black Jack can only be executed in Codeskulptor Environment http://www.codeskulptor.org/
+#Supports One player currenly
+#Follows Basic single player Black Jack Rules -> Check Readme for Rules
+#The images used are provided by Rice University team
+#simplegui module is close to pygame,however this code cannot be directly used in any other environment
+#other than code Skulptor
+#Caution: Please wait few seconds for images to load
+import simplegui
+import random
+
+# load card sprite - 936x384 - source: jfitz.com
+CARD_SIZE = (72, 96)
+CARD_CENTER = (36, 48)
+card_images = simplegui.load_image("http://storage.googleapis.com/codeskulptor-assets/cards_jfitz.png")
+
+CARD_BACK_SIZE = (72, 96)
+CARD_BACK_CENTER = (36, 48)
+card_back = simplegui.load_image("http://storage.googleapis.com/codeskulptor-assets/card_jfitz_back.png")    
+
+# initialize some useful global variables
+in_play = False
+outcome = ""
+score = 0
+BUSTED_SW = False
+COMP_BUST_SW = False
+WIN_SW = 'N'
+
+# define globals for cards
+SUITS = ('C', 'S', 'H', 'D')
+RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K')
+VALUES = {'A':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, 'T':10, 'J':10, 'Q':10, 'K':10}
+
+
+# define card class
+class Card:
+    def __init__(self, suit, rank):
+        if (suit in SUITS) and (rank in RANKS):
+            self.suit = suit
+            self.rank = rank
+        else:
+            self.suit = None
+            self.rank = None
+            print "Invalid card: ", suit, rank
+
+    def __str__(self):
+        return self.suit + self.rank
+
+    def get_suit(self):
+        return self.suit
+
+    def get_rank(self):
+        return self.rank
+
+    def draw(self, canvas, pos):
+        card_loc = (CARD_CENTER[0] + CARD_SIZE[0] * RANKS.index(self.rank), 
+                    CARD_CENTER[1] + CARD_SIZE[1] * SUITS.index(self.suit))
+        canvas.draw_image(card_images, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]], CARD_SIZE)
+        
+# define hand class
+class Hand:
+    def __init__(self):
+        self.hand = []
+        
+    def __str__(self):
+        hand_prin = []
+        print "Hand contains",
+        for each in self.hand:
+            hand_prin.append((each.get_suit() + each.get_rank()))     
+        return  str(' '.join(hand_prin))
+       
+
+    def add_card(self, card):
+        self.hand.append(card)
+
+    def get_value(self):
+        total_val = 0
+        ace_sw = 'N'
+        for each in self.hand:
+            total_val += VALUES[each.get_rank()]
+            if each.get_rank() == 'A':
+                ace_sw = 'Y'
+        if ace_sw == 'Y' and total_val < 12:
+            total_val += 10
+        return total_val
+            
+    def draw(self, canvas, pos):
+        for each in self.hand:
+            each.draw(canvas,pos)
+            pos[0] += 100
+
+
+# define deck class 
+class Deck:
+    def __init__(self):
+        self.deck=[suit + rank for suit in SUITS for rank in RANKS]
+
+    def shuffle(self):
+        # shuffle the deck 
+        random.shuffle(self.deck)
+
+    def deal_card(self):
+        temp = self.deck.pop(-1)
+        return Card(temp[0],temp[1])
+    
+    def __str__(self):
+        print "The current deck is as below:"
+        return str(' '.join(self.deck)) 
+    
+# declaring global variables for hands
+player_hand   = Hand()
+computer_hand = Hand()
+main_deck = Deck()
+#define event handlers for buttons
+
+def deal():
+    global outcome, in_play,player_hand,computer_hand,BUSTED_SW,COMP_BUST_SW,WIN_SW,score,main_deck,player_hand,computer_hand
+    if in_play == True:
+        score -=1
+    
+    main_deck = Deck()
+    main_deck.shuffle()
+    player_hand  = Hand()
+    computer_hand = Hand()
+    in_play = True
+    BUSTED_SW = False
+    COMP_BUST_SW = False
+    WIN_SW = 'N'
+    for i in range(2):
+        player_hand.add_card(main_deck.deal_card())
+        computer_hand.add_card(main_deck.deal_card()) 
+    in_play = True
+# The below function handler hits the player when value is less than 21 and then computes the value and check
+# if the player is busted
+def hit():
+    global in_play,BUSTED_SW,score,main_deck,player_hand,computer_hand
+    if in_play == True:
+        if player_hand.get_value() <= 21:
+            player_hand.add_card(main_deck.deal_card())
+        
+        if player_hand.get_value() > 21:
+            in_play = False
+            BUSTED_SW = True 
+            score -= 1
+            
+def stand():
+    global in_play,COMP_BUST_SW,score,WIN_SW
+    
+    if in_play == False:
+        return
+    while computer_hand.get_value() < 17:
+        computer_hand.add_card(main_deck.deal_card())
+    if computer_hand.get_value() > 21:   
+        score +=1
+        COMP_BUST_SW = True  
+    elif computer_hand.get_value() >= player_hand.get_value():
+        WIN_SW = 'C'
+        score -=1
+    else:
+        WIN_SW = 'P'
+        score +=1
+    in_play = False    
+# draw handler    
+def draw(canvas):
+    global score,in_play,card_loc,CARD_SIZE,CARD_CENTER
+    canvas.draw_text('BLACK JACK', (50, 60), 30, 'White','sans-serif')
+    canvas.draw_text('Score : ', (400, 100), 30, 'Black','sans-serif')
+    canvas.draw_text(str(score), (500, 102), 30, 'Black','sans-serif')
+    canvas.draw_text('Dealer', (50, 150), 30, 'Black','sans-serif')
+    canvas.draw_text('Player', (50, 350), 30, 'Black','sans-serif')
+    # test to make sure that card.draw works, replace with your code below
+    player_hand.draw(canvas,[50,380])
+    computer_hand.draw(canvas,[50,180])
+    
+    if in_play == True:
+        canvas.draw_text('Hit or Stand ?', (300, 350), 30, 'Black','sans-serif')
+        canvas.draw_image(card_back, CARD_CENTER, CARD_SIZE, [50+CARD_CENTER[0],180+CARD_CENTER[1]], CARD_SIZE)
+    elif BUSTED_SW == True:
+        canvas.draw_text('Player Busted,New Deal ?.', (300, 350), 20, 'Black','sans-serif')
+    elif COMP_BUST_SW == True:
+        canvas.draw_text('Dealer Busted,New Deal ?.', (300, 150), 20, 'Black','sans-serif')
+    elif WIN_SW == 'C':
+        canvas.draw_text('Dealer WON,New Deal ?', (300, 150), 20, 'Black','sans-serif')
+    else:
+        canvas.draw_text(' Player WON,New Deal ?', (300, 350), 20, 'Black','sans-serif')
+        
+# initialization frame
+frame = simplegui.create_frame("Blackjack", 600, 600)
+frame.set_canvas_background("Green")
+
+#create buttons and canvas callback
+frame.add_button("Deal", deal, 200)
+frame.add_button("Hit",  hit, 200)
+frame.add_button("Stand", stand, 200)
+frame.set_draw_handler(draw)
+
+
+# get things rolling
+deal()
+frame.start()
