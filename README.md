@@ -1,7 +1,7 @@
 # Single_player_Black_Jack
 This is a single player Black Jack played with standard rules
 The below link directs to an web browser version of this game in CodeSkulptor
-#http://www.codeskulptor.org/#user40_hzlvN9EjztHRuWD_1.py
+#http://www.codeskulptor.org/#user40_MtTuIqQYwOUuein.py
 
 Blackjack, also known as twenty-one, is the most widely played casino banking game in the world.[1] Blackjack is a comparing card game between a player and dealer, meaning players compete against the dealer but not against other players. It is played with one or more decks of 52 cards. The object of the game is to beat the dealer in one of the following ways:
 
