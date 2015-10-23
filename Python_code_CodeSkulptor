@@ -168,7 +168,7 @@ def draw(canvas):
     canvas.draw_text(str(score), (500, 102), 30, 'Black','sans-serif')
     canvas.draw_text('Dealer', (50, 150), 30, 'Black','sans-serif')
     canvas.draw_text('Player', (50, 350), 30, 'Black','sans-serif')
-    # test to make sure that card.draw works, replace with your code below
+    
     player_hand.draw(canvas,[50,380])
     computer_hand.draw(canvas,[50,180])
     
@@ -195,6 +195,6 @@ frame.add_button("Stand", stand, 200)
 frame.set_draw_handler(draw)
 
 
-# get things rolling
+
 deal()
 frame.start()
